@@ -1,0 +1,67 @@
+#!/bin/bash
+
+#declare all the variable with initial values
+createIncrementalDirectory="$HOME/home/backup/ib"
+createCompleteDirectory="$HOME/home/backup/cb"
+createBkpLogFile="$HOME/home/backup/backup.log"
+fileLogtimeFormat="%a %d %b %Y %I:%M:%S %p %Z"
+fileLogBackupTimeFormat="%Y-%m-%d %H:%M:%S %Z"
+completeBkpCount=20001
+incrementalBkpCount=10001
+
+#To create directory as per requirement
+mkdir -p "$createCompleteDirectory"
+mkdir -p "$createIncrementalDirectory"
+touch "$createBkpLogFile"
+
+#below function look for .txt file at entire directory root and create a incremental backup in every 2 mins
+#in case of new text file is created or modified
+invokeIncrementalBkp()
+{
+  lastestUpdateFile=$(find "$HOME" -type f -name "*.txt" -newermt "$2")
+  #check if there is any new .txt file is created or modified
+  if [ -n "$lastestUpdateFile" ]; then
+  #fetch all text files that have been created or modified since the specified timestamp
+	find "$HOME" -type f -name "*.txt" -newermt "$2" -print0| tar -cf "$createIncrementalDirectory/ib$incrementalBkpCount.tar" --null -T-
+	#append details in log file
+	echo "$1  ib$incrementalBkpCount.tar was created" >>"$createBkpLogFile"
+	#increase the tar file backup count
+	incrementalBkpCount=$((incrementalBkpCount + 1))
+  else
+	#append details in log file
+	echo "$1  No changes - Incremental backup was not created" >>"$createBkpLogFile"
+  fi
+}
+
+#below function look for .txt files at entire directory root and create a complete backup
+invokeCompleteBkp()
+{
+  #fetch all the text files in the entire directory root and archive them into a single tar file
+  find "$HOME" -type f -name "*.txt"  -print0| tar -cf "$createCompleteDirectory/cb$completeBkpCount.tar" --null -T-
+  #append details in log file
+  echo "$1  cb$completeBkpCount.tar was created" >>"$createBkpLogFile"
+  #increase the tar file backup count for next-completebackup
+  completeBkpCount=$((completeBkpCount + 1))
+}
+
+
+while :; do
+  #1:Create a complete backup
+  #set the timezone as EDT
+  currentLogTimeFormat=$(TZ=EDT date +"$fileLogtimeFormat")
+  currentTime=$(date +"$fileLogBackupTimeFormat")
+  #invoke the complete backup function
+  invokeCompleteBkp "$currentLogTimeFormat"
+  sleep 120
+
+  #2:Create an incremental backup three times in every 2 mins
+  for i in {1..3}; do
+	#set the timezone as EDT
+	currentLogTimeFormat=$(TZ=EDT date +"$fileLogtimeFormat")
+	#invoke the incremental backup function
+	invokeIncrementalBkp "$currentLogTimeFormat" "$currentTime"
+	currentTime=$(date +"$fileLogBackupTimeFormat")
+	sleep 120
+  done
+done &
+#'&' at the end runs the backup process in the background
