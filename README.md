@@ -3,6 +3,6 @@ This repository is having all the materials like lectures, labs, assignments & p
 
 Final Project is contributed by below memebers:
 # 1. [Abhirup Ranjan](https://github.com/abhirupcse/)
-# 2. Rohit Kumar
+# 2. [Rohit Kumar](https://www.linkedin.com/in/kumar2d/)
 
 note: feel free to write anyone of us to know more about labs, assignments & project.
