@@ -1,0 +1,112 @@
+/*
+  Author of code
+  Name: Rohit Kumar
+  Student Id: 110088741
+  Section: 3
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+
+int main()
+{
+
+    /*
+        code synopsis
+        $ cat input.txt|wc|wc -w
+    */
+   
+    // To build this program, we need 2 file descriptors each for 2 pipes
+    int inputFileDesc[3][2];
+
+    // Below logic verify and creates the pipe
+    for (int i = 0; i < 3; i++)
+    {
+        if (pipe(inputFileDesc[i]) == -1)
+        {
+            printf("!!Error Occured: While creating the pipe!!");
+            exit(1);
+        }
+    }
+
+    // below logic will create fork1 and handle "cat" command
+    if (fork() == 0)
+    {
+
+        dup2(inputFileDesc[0][1], STDOUT_FILENO);
+
+        //closing the input file descriptors
+        close(inputFileDesc[0][0]);
+
+        close(inputFileDesc[0][1]);
+
+        //The execlp() function replaces the current process with a new process
+        execlp("cat", "cat", "input.txt", NULL);
+
+        printf("!!Error Occured: While executing the command in fork1");
+
+        exit(1);
+    }
+  
+    // below logic will create fork2 and handle "wc" command
+    if (fork() == 0)
+    {
+
+        dup2(inputFileDesc[1][0], STDIN_FILENO);
+
+        dup2(inputFileDesc[2][1], STDOUT_FILENO);
+
+        //closing the input file descriptors
+        close(inputFileDesc[0][0]);
+
+        close(inputFileDesc[0][1]);
+
+        close(inputFileDesc[1][1]);
+
+        close(inputFileDesc[2][0]);
+
+        close(inputFileDesc[2][1]);
+
+        //The execlp() function replaces the current process with a new process
+        execlp("wc", "wc", NULL);
+
+        printf("!!Error Occured: While executing the command in fork2!!");
+
+        exit(1);
+    }
+
+    // below logic will create fork3 and handle "wc" command
+    if (fork() == 0)
+    {
+
+        dup2(inputFileDesc[2][0], STDIN_FILENO);
+
+        //below logic will write into the output file
+        FILE *outputFileDesc=fopen("output.txt", "w");
+        dup2(fileno(outputFileDesc), STDOUT_FILENO);
+
+        //closing the input file descriptors 
+        close(inputFileDesc[0][0]);
+
+        close(inputFileDesc[0][1]);
+
+        close(inputFileDesc[1][0]);
+
+        close(inputFileDesc[1][1]);
+
+        close(inputFileDesc[2][0]);
+
+        close(inputFileDesc[2][1]);
+
+        //The execlp() function replaces the current process with a new process
+        execlp("wc", "wc", "-w", NULL);
+
+        printf("!!Error Occured: While executing the command in fork3!!");
+
+        return 0;
+    }
+    return 0;
+}

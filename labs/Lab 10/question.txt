@@ -1,0 +1,8 @@
+Create a global variable =6
+Create a thread function func() that decreases the global variable count by 1 and prints the thread id and count only if the thread was created in the detached mode
+->count must be protected by a mutex lock
+
+ 
+
+Main: create a loop that alternatively creates 3 thread each in the joinable and the detached state (6 thread in total)
+-> the thread attribute must set appropriately to create thread in detached and joinable states

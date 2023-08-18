@@ -1,0 +1,4 @@
+Write a v program lab5.c with an infinite loop that prints Welcome continuously with intervals of 1 sec with the following requirement
+Entering CTR-C should not terminate the program
+The program should terminate upon entering two successive CTR-C within a time interval of 5 seconds
+if the time interval b/w successive CTRCL-C is more than 5 seconds, the program should not be terminated and the count of CTRCL-c must be reset

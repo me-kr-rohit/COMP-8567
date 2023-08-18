@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Check if the correct arguments is passed
+if [ $# -lt 1 ]; then
+  echo "Code Synopsis: $0 <directory_path> [<extension>]"
+  exit 1
+fi
+
+directory=$1
+extension=$2
+
+# Count the specific number extension file in the given directory
+if [ -z "$extension" ]; then
+  count=$(find "$directory" -type f | wc -l)
+else
+  count=$(find "$directory" -type f -name "*$extension" | wc -l)
+fi
+
+# list the count
+if [ $count -eq 0 ]; then
+  if [ -z "$extension" ]; then
+    echo "Ohh! No files are found in directory $directory"
+  else
+    echo "Ohh! No files are found with extension $extension in directory $directory"
+  fi
+else
+  if [ -z "$extension" ]; then
+    echo "Total number of files in directory $directory: $count"
+  else
+    echo "Total number of files with extension $extension in directory $directory: $count"
+  fi
+fi
